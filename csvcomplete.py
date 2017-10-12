@@ -14,7 +14,6 @@ from HTMLParser import HTMLParser
 from Bio import Entrez
 Entrez.email = "X@Y.com"
 
-
 # GOAL: input a csv file containing accession numbers
 # output: csv file with accession #s and sequences
 
