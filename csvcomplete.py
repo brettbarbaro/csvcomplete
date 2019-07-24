@@ -1321,7 +1321,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # opm = all_data[x][headers['OPM']]
             # cleanopm = all_data[x][headers['CLEANOPM']]
             uniprot = ipi = gi = ''
-			uniprot_found = ipi_found = gi_found = False
+            uniprot_found = ipi_found = gi_found = False
             # temp_filename = ''
             # localization = all_data[x][headers['LOCALIZATION']]
             # accession = all_data[x][headers['ACCESSION']]
@@ -1335,21 +1335,21 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # interactions = all_data[x][headers['INTERACTIONS']]
             if 'UNIPROT_ID' in headers:
                 uniprot = all_data[x][headers['UNIPROT_ID']]
-				uniprot_found = True
-            if not uniprot_found and 'UNIPROT_given' in headers:
-                uniprot = all_data[x][headers['UNIPROT_given']].split(';')[0]
+                uniprot_found = True
+                if not uniprot_found and 'UNIPROT_given' in headers:
+                    uniprot = all_data[x][headers['UNIPROT_given']].split(';')[0]
                 all_data[x][headers['UNIPROT_ID']] = uniprot
-				uniprot_found = True
+                uniprot_found = True
             if uniprot:
                 print(uniprot)
             if 'IPI' in headers and all_data[x][headers['IPI']]:
                 ipis = (all_data[x][headers['IPI']]).split(";")
                 ipi = ipis[0].strip()
-				ipi_found = True
+                ipi_found = True
             if 'GI' in headers and all_data[x][headers['GI']]:
                 gi = all_data[x][headers['GI']]
                 gi = gi.strip()
-				gi_found = True
+                gi_found = True
             if gi_found and 'ACCESSION' in headers and not all_data[x][headers['ACCESSION']]:
                 try:
                     accession = gi2acc(gi)
@@ -1379,7 +1379,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
                     print(accession)
                     uniprot = acc2uniprot(all_data[x][headers['ACCESSION']])
                     all_data[x][headers['UNIPROT_ID']] = uniprot
-					uniprot_found = True
+                    uniprot_found = True
                     print('uniprot = ' + uniprot)
                 except:
                     print('could not find uniparc')
@@ -1439,7 +1439,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
                 try:
                     uniprot = uniparc2uniprot(all_data[x][headers['UNIPARC']])
                     all_data[x][headers['UNIPROT_ID']] = uniprot
-					uniprot_found = True
+                    uniprot_found = True
                     print('uniprot = ' + uniprot)
                 except:
                     print('could not find uniprot')
