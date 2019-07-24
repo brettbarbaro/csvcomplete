@@ -8,7 +8,6 @@ Must have "HEADERS" in column 1 to mark header row, and "INCLUDE" column with va
 10.0.3 can now take xls and xlsx files.
 """
 
-import babel
 import csv  # for dealing with .csv files
 import urllib
 import urllib2  # for getting stuff off the web
@@ -31,7 +30,7 @@ print("hello")
 
 
 csvpath = """
-C:\Users\\brett\Dropbox (Scripps Research)\Documents_dropbox\PBC Consortium\PBC_MODELS\insulin_secretory_granule\_ISG_menus_etc\_ISG_composite\ISG_Composite_BB307_teste.xlsx
+/Users/mac/Dropbox (Scripps Research)/OLSON/RCSB v Uniprot comparisonB.xlsx
 """
 csvpath = csvpath.strip('\n')
 print('csvpath = ' + csvpath)
@@ -53,7 +52,7 @@ if csvpath.endswith('.xls') or csvpath.endswith('.xlsx'):
     wb = openpyxl.load_workbook(csvpath)
     ws = wb.active  # choose active sheet
     from openpyxl.styles import Font
-    from openpyxl.styles import Color
+#    from openpyxl.styles import Color
     from openpyxl.styles import colors
     red = Font(color=colors.RED)  # provides text for font
     all_data = [['' for i in range(ws.max_column)] for j in range(ws.max_row)]
@@ -128,8 +127,6 @@ class MyHTMLParser(HTMLParser):
         if tag == self.lookforTag:
             self.tag_stack = True
             self.tag_attr = []
-            # print "Encountered the beginning of a %s tag" % tag
-            # print attrs
             if len(attrs):
                 if self.lookforAttr is not None:
                     for atr in self.lookforAttr:
@@ -141,10 +138,8 @@ class MyHTMLParser(HTMLParser):
 
     def handle_endtag(self, tag):
         self.tag_stack = False
-        # self.tag_attr = None
         pass
 
-    #        print "Encountered the end of a %s tag" % tag
 
     def handle_data(self, data):
         if self.tag_stack:
@@ -156,8 +151,6 @@ class MyHTMLParser(HTMLParser):
                         self.stored.append(self.tag_attr)
             else:
                 if data == self.lookforData:
-                    # print "Encountered data %s" % data
-                    # print self.tag_attr
                     self.stored.append(self.tag_attr)
 
 
@@ -170,8 +163,7 @@ for x in range(0,len(all_data)):
     value = all_data[x][0]
     if value[0:6] == 'TAXID=':
         taxid = value[6:]
-        print('TAXID=' + taxid)
-        break
+        x =  -1
 
 # get string to represent taxid in searches
 # taxname = 'RAT'  # temporary - replace based on TAXID
@@ -179,8 +171,7 @@ for x in range(0,len(all_data)):
 taxlong = ''
 url = 'https://www.uniprot.org/uniprot/?query=organism%3A' + taxid + '&sort=score'
 response = urllib2.urlopen(url)
-response_text = response.read()
-r = response_text
+r = response.read()
 cursorstring = str('/taxonomy/' + str(taxid) + '">')
 cursor = r.find(cursorstring) + len(cursorstring)
 if cursor == len(cursorstring)-1:
@@ -193,7 +184,7 @@ if taxlong == '':
 print('taxlong = ' + taxlong)
 
 # Localizations are places where given ingredients are found
-targetLocalizations = ['Secreted', 'Cytoplasmic vesicle']  #Synaptosome? Peroxisome? Cytoskeleton? Cell membrane? Endosome?
+targetLocalizations = targetLocations = ['Secreted', 'Cytoplasmic vesicle']  #Synaptosome? Peroxisome? Cytoskeleton? Cell membrane? Endosome?
 neutralLocalizations = ['Endoplasmic reticulum', 'Membrane', 'Endosome', 'Cell membrane', 'Golgi apparatus',
                         'Peroxisome', '', 'Lysosome', 'Amyloid', 'Synapse', 'Synaptosome', 'Surface film',
                         'Host cell membrane', 'Host membrane', 'Thick filament']
@@ -210,10 +201,8 @@ contaminantLocalizations = ['Nucleus', 'Spliceosome','Signalosome', 'Telomere',
                             'Membrane attack complex', 'Target cell membrane', 'Target membrane',
                             'Signal recognition particle', 'Host cytoplasm', 'Exosome', 'Host nucleus',
                             'Capsid protein', 'Host endosome', 'Inflammasome', 'Host mitochondrion']
-newLocalizations = []
 
 # Locations are places where interacting proteins are found
-targetLocations = ['Secreted', 'Cytoplasmic vesicle']  #Synaptosome? Peroxisome? Cytoskeleton? Cell membrane? Endosome?
 neutralLocations = ['Membrane', 'Endosome', 'Cell membrane', 'Cytoplasm', 'Cytoskeleton', 'Extracellular matrix',
                     'Basement membrane', 'Golgi apparatus', 'Peroxisome', 'Cell projection', 'Lysosome',
                     'Cell junction', 'Synapse', 'Synaptosome', 'Cilium', 'Microtubule', 'Surface film', 'Host cell membrane', 'Host membrane', 'Thick filament', 'Primosome',
@@ -235,15 +224,14 @@ newLocations = []
 for x in range(0,len(all_data)):
     value = all_data[x][0]
     if value == 'HEADERS':
-        headersrow = x
-        print('headersrow = ' + str(headersrow + 1))
-        break
+        print('headersrow = ' + str(x + 1))
+        x = -1
 
 default_headers = ['HEADERS', 'INCLUDE', 'CONFIDENCE', 'ACCESSION', 'UNIPROT_ID', 'ORGANISM', 'GENE',
                    'UNIPROT_NAME', 'UNIPARC', 'NAME', 'SEQUENCE_ORIGINAL', 'MODIFIED SEQUENCE','FOUNDPDBS', 'chosenPDB',
                    'TOP_PDB', 'OPM', 'CLEANOPM', 'PRINCIPAL_VECTOR', 'OFFSET', 'JITTER_MAX', 'COLOR', 'MW',
                    'LENGTH', 'notes', 'LOCALIZATION', 'MEMBRANE', 'COFACTORS', 'LIGANDS', 'INTERACTIONS_RGD',
-                   'UNIPROT_INTERACTIONS', 'STRINGDB_INTERACTIONS', 'BIOGRID_INTERACTIONS', 'INTACT_INTERACTIONS']
+                   'INTERACTIONS_UNIPROT', 'INTERACTIONS_STRINGDB', 'INTERACTIONS_BIOGRID', 'INTERACTIONS_INTACT']
 startingHeaders = all_data[headersrow]
 for x in range(len(startingHeaders)):
     if startingHeaders[x] not in all_data[headersrow]:
@@ -253,14 +241,8 @@ for x in range(len(startingHeaders)):
             ws.cell(y+1,x+1,'')
         all_data[headersrow][x] = startingHeaders[x]
 
-print('HEADERS')
-print(all_data[headersrow])
-# wb.save(str(model_dir + csvname + '_test2.xlsx'))  # save
-
-# possibly only add headers when needed? change values as new headers are added?
-
-
-# headers = {'test': 'headers test works'}
+#print('HEADERS')
+#print(all_data[headersrow])
 headers = {}
 for num in range(len(all_data[headersrow])):
     headers[all_data[headersrow][num]] = num  # This establishes a dictionary with the header names in it.
@@ -278,8 +260,7 @@ if os.path.isfile(model_dir + csvname + '_inprogress.csv'):
 def acc2fasta(accession):  # I did this using Entrez, but why? Just makes it dependent. Maybe change.
     print('acc2seq ' + accession)
     handle = Entrez.efetch(db="protein", id=accession, rettype="fasta")
-    fasta = handle.read()
-    return fasta
+    return handle.read()
 
 
 def acc2seq(accession):  # I did this using Entrez, but why? Just makes it dependent. Maybe change.
@@ -327,9 +308,7 @@ def uniprot2localization(uniprot):
         return ''
     print ('uniprot2localization (' + uniprot + ')')
     url = 'http://www.uniprot.org/uniprot/' + uniprot
-    response = urllib2.urlopen(url)
-    response_text = response.read()
-    r = response_text
+    r = (urllib2.urlopen(url)).read()
     cursorstring = 'Keywords - Cellular component'
     cursor = r.find(cursorstring) + len(cursorstring)
     if cursor == len(cursorstring)-1:
@@ -353,8 +332,7 @@ def uniprot2localization(uniprot):
 def gi2acc(gi):
     print('gi2acc(' + gi + ')')
     url = 'https://www.ncbi.nlm.nih.gov/protein/' + gi
-    response = urllib2.urlopen(url)
-    r = response.read()
+    r = (urllib2.urlopen(url)).read()
     cursorstring = 'BlastSearch&amp;QUERY='
     cursor = r.find(cursorstring) + len(cursorstring)
     if cursor == len(cursorstring)-1:
@@ -381,8 +359,7 @@ def acc2uniparc(accession):
     except:
         pass
     url = 'http://www.uniprot.org/uniparc/?query=' + acc + '&sort=score'
-    response = urllib2.urlopen(url)
-    r = response.read()
+    r = (urllib2.urlopen(url)).read()
     cursor = r.find('tr id="UPI') + 7
     if cursor == 6:
         return ''
@@ -452,8 +429,7 @@ def ipi2uniparc(ipi):
     print('ipi2uniparc(' + ipi + ')')
     url = 'http://www.uniprot.org/uniparc/?query=' + ipi + '&sort=score'
     response = urllib2.urlopen(url)
-    response_text = response.read()
-    r = response_text
+    r = response.read()
     records = r.split('entryID')
     for record in records:
         record = record.strip()
@@ -466,8 +442,7 @@ def acc2uniprot(acc):
     print('acc2uniprot(' + acc + ')')
     url = 'https://www.uniprot.org/uniprot/?query=' + acc + '&sort=score'
     response = urllib2.urlopen(url)
-    response_text = response.read()
-    r = response_text
+    r = response.read()
     records = r.split('entryID')
     for record in records:
         if taxlong in record and '/uniprot/' in record:
@@ -587,21 +562,18 @@ def getReviewed(uniprot):
 
 def getBestUniprotFromGene(gene):
     print('getBestUniprotFromGene ' + gene)
-    genea=gene.lower()
     r = urllib.urlopen("https://www.uniprot.org/uniprot/?query=" + gene + "+" + taxid + "&sort=score").read()
     records = r.split('entryID')
     for record in records[1:]:
-        if str(taxid) in record and '/uniprot/' in record and str('>' + genea + '<') in record.lower():
+        if str(taxid) in record and '/uniprot/' in record and str('>' + gene.lower() + '<') in record.lower():
             uniprot = (record.split('/uniprot/')[1]).split('"')[0]
-            print(str(genea) + ' uniprot = ' + str(uniprot))
+            print(str(gene.lower()) + ' uniprot = ' + str(uniprot))
             return uniprot
     return 'None'
 
 
 #Checks to make sure that the uniprot entry is for the rattus norvegicus species. Returns boolean
 def checkOrganism(uniprot):
-    print('checkOrganism')
-    return True
     print('checkOrganism ' + uniprot)
     urllib.urlretrieve("http://www.uniprot.org/uniprot/" + uniprot + ".xml", model_dir + 'uniprotentry.xml')
     record_iterator = SeqIO.parse(model_dir + 'uniprotentry.xml', 'uniprot-xml')
@@ -701,12 +673,11 @@ def rgdDependencies(uniprot):
 # Returns any interactions listed explicitly on the uniprot website (other than cofactors and lignads)
 def uniprotInteractions(uniprot):
     print('uniprotInteractions ' + uniprot)
-    subunits = ""
+    subunits = eachGene = ""
     finalReturn = []
     listOfInteractors = []
     uniprotFile = urllib.urlopen('https://www.uniprot.org/uniprot/?query=accession:' + uniprot + '&columns=interactor&format=tab')
     interactors = uniprotFile.read()
-    eachGene = ""
     record_iterator = SeqIO.parse(model_dir + 'uniprotentry' + uniprot + '.xml', 'uniprot-xml')  # Why access this?
     record = next(record_iterator)  # What is purpose of next()?
     try:
@@ -736,8 +707,7 @@ def stringdbInteractors(uniprot):
     print('stringdbInteractions ' + uniprot)
     num = 0
     data = urllib.urlopen("https://string-db.org/api/tsv/interaction_partners?identifiers=" + uniprot + "&limit=10")
-    stringInteractors = ""
-    finalReturn = ""
+    stringInteractors = finalReturn = ""
     # Reads first line
     line = data.readline()
     # While there are still lines to read and you haven't recieved an error. The max number of interactors is currently set as 10.
@@ -869,7 +839,7 @@ def uniprot2seq(uniprot):
     if uniprot != '' and uniprot != '?' and uniprot != 'complicated':
         uniprotFile1 = urllib.urlopen('https://www.uniprot.org/uniprot/?query=accession:' + uniprot + '&columns=sequence&format=tab')
         # Strips the query information of a header in case no actual sequence is present
-        sequence =  uniprotFile1.read().strip('Sequence\n')
+        sequence =  (uniprotFile1.read()).strip('Sequence\n')
     return sequence
 
 def uniparc2seq(uniparc):
@@ -910,7 +880,6 @@ def seq2pdb(row, sequence, details=0):
         try:
             response = urllib2.urlopen(url)
             response_text = response.read()
-            r = response_text
             break
         except:
             print("   urllib2 failure " + str(x))
@@ -949,7 +918,7 @@ def seq2pdb(row, sequence, details=0):
         print(all_data[headersrow])
         print(headers)
         cursor = 0
-        for x in range(0, 1):  # return up to the first 10 (11?) results
+        for x in range(0, 1):  # return up to the first 10 (11?) results-- how is this returning 10 results if the range is 0 to 1?
             cursor = r.find('<a name', cursor)  # takes us to next PDBID
             if cursor == -1:
                 break
@@ -1200,9 +1169,8 @@ def getOPM(pdbId):
         # direct access
         try:
             response = urllib2.urlopen(url)
-            res = response.read()
             f = open(model_dir + os.sep + 'PDB' + os.sep + pdbId + "_mb.pdb", "w")
-            f.write(res)
+            f.write(response.read())
             f.close()
             return pdbId + "_mb"
         except:
@@ -1227,15 +1195,13 @@ def computeOPM(pdbId):
         r = requests.post(url, data=payload,files={"userfile":open(filename,"r")},timeout=600.0)
         p = MyHTMLParser()
         p.extract_p_contents(r.content,lookforData=None, lookforTag="a",lookforAttr=['href'])
-        print('x')
         if not len(p.stored) :
             return ""
         url_download = "http://sunshine.phar.umich.edu/"+p.stored[0][0]
         response = urllib2.urlopen(url_download)
         print('x')
-        res = response.read()
         f = open(pdbpath + pdbId + "_opmcomp_mb.pdb","w")
-        f.write(res)
+        f.write(response.read())
         f.close()
         print('x')
         end = time.time()
@@ -1338,6 +1304,7 @@ def possible(x, source, target):
 
 def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, foundpdbs=0, pdb='', opm=0, cleanopm=0, temp_filename=0, localization=0, PRINCIPAL_VECTOR=0, offset=0, JITTER_MAX=0, LENGTH=0, mw=0, cofactors=0, ligands=0, interactions =0):
     proteinNumber = 1
+#	uniprot = "N/A"
     with open(str(model_dir + csvname + '_inprogress.csv'), 'wb') as csvprogress:  # opens progress file
         for row in range(0, headersrow+1):
             spamwriter = csv.writer(csvprogress)
@@ -1354,6 +1321,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # opm = all_data[x][headers['OPM']]
             # cleanopm = all_data[x][headers['CLEANOPM']]
             uniprot = ipi = gi = ''
+			uniprot_found = ipi_found = gi_found = False
             # temp_filename = ''
             # localization = all_data[x][headers['LOCALIZATION']]
             # accession = all_data[x][headers['ACCESSION']]
@@ -1367,20 +1335,22 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # interactions = all_data[x][headers['INTERACTIONS']]
             if 'UNIPROT_ID' in headers:
                 uniprot = all_data[x][headers['UNIPROT_ID']]
-            if 'UNIPROT_ID' in headers and all_data[x][headers['UNIPROT_ID']] == '' and 'UNIPROT_given' in headers:
+				uniprot_found = True
+            if not uniprot_found and 'UNIPROT_given' in headers:
                 uniprot = all_data[x][headers['UNIPROT_given']].split(';')[0]
                 all_data[x][headers['UNIPROT_ID']] = uniprot
+				uniprot_found = True
             if uniprot:
                 print(uniprot)
             if 'IPI' in headers and all_data[x][headers['IPI']]:
-                ipi = all_data[x][headers['IPI']]
-                ipis = ipi.split(";")
-                ipi = ipis[0]
-                ipi = ipi.strip()
+                ipis = (all_data[x][headers['IPI']]).split(";")
+                ipi = ipis[0].strip()
+				ipi_found = True
             if 'GI' in headers and all_data[x][headers['GI']]:
                 gi = all_data[x][headers['GI']]
                 gi = gi.strip()
-            if gi and 'ACCESSION' in headers and not all_data[x][headers['ACCESSION']]:
+				gi_found = True
+            if gi_found and 'ACCESSION' in headers and not all_data[x][headers['ACCESSION']]:
                 try:
                     accession = gi2acc(gi)
                     all_data[x][headers['ACCESSION']] = accession
@@ -1404,12 +1374,12 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             #         print('uniparc = ' + uniparc)
             #     except:
             #         print('could not find uniparc')
-            if 'ACCESSION' in headers and all_data[x][headers['ACCESSION']] and 'UNIPROT_ID' in headers and not all_data[x][headers['UNIPROT_ID']]:
+            if 'ACCESSION' in headers and all_data[x][headers['ACCESSION']] and not uniprot_found:
                 try:
                     print(accession)
-                    accession = all_data[x][headers['ACCESSION']]
-                    uniprot = acc2uniprot(accession)
+                    uniprot = acc2uniprot(all_data[x][headers['ACCESSION']])
                     all_data[x][headers['UNIPROT_ID']] = uniprot
+					uniprot_found = True
                     print('uniprot = ' + uniprot)
                 except:
                     print('could not find uniparc')
@@ -1444,7 +1414,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
 #                 print('uniparc = ' + uniparc)
 #                 print('uniprot = ' + uniprot)
 #             print(all_data[x][headers['UNIPARC']])
-            if 'IPI' in headers and all_data[x][headers['IPI']] and 'UNIPARC' in headers and not all_data[x][headers['UNIPARC']]:
+            if ipi != '' and 'UNIPARC' in headers and not all_data[x][headers['UNIPARC']]:
                 ipis = all_data[x][headers['IPI']].split(';')
                 for ipi in ipis:
                     try:
@@ -1465,10 +1435,11 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
 #                     print('could not find uniparc')
 #             print(all_data[x][headers['UNIPARC']])
 
-            if 'UNIPARC' in headers and all_data[x][headers['UNIPARC']] and 'UNIPROT_ID' in headers and not all_data[x][headers['UNIPROT_ID']]:
+            if 'UNIPARC' in headers and all_data[x][headers['UNIPARC']] and not uniprot_found:
                 try:
                     uniprot = uniparc2uniprot(all_data[x][headers['UNIPARC']])
                     all_data[x][headers['UNIPROT_ID']] = uniprot
+					uniprot_found = True
                     print('uniprot = ' + uniprot)
                 except:
                     print('could not find uniprot')
@@ -1908,7 +1879,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # These routines retrieve dependency and interaction info
             if 'UNIPROT_ID' in headers:
                 uniprot = all_data[x][headers['UNIPROT_ID']]
-            if possible(x, 'UNIPROT_ID','COFACTORS_UNIPROT'): # needs COFACTORS_UNIPROT - FIX!!!!
+            if possible(x, 'UNIPROT_ID','COFACTORS_UNIPROT'):
                 if uniprot != '' and uniprot != '?' and uniprot != 'complicated' and uniprot != 'None':
                     if checkOrganism(uniprot):  # this whole subroutine needs to be fixed. FIX
                         urllib.urlretrieve("http://www.uniprot.org/uniprot/" + uniprot + ".xml", model_dir + 'uniprotentry' + uniprot + '.xml')
@@ -2052,7 +2023,6 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             if possible(x, 'LOCALIZATION', 'FORTRAN_INTERACTIONS'):
                 print('FORTRAN_INTERACTIONS computations')
                 compartments = all_data[x][headers['INTERACTION_COMPARTMENTS']].split(';')
-                print(compartments)
                 for entry in compartments:
                     if entry != '':
                         entry = "I_" + entry
