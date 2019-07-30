@@ -8,6 +8,7 @@ Must have "HEADERS" in column 1 to mark header row, and "INCLUDE" column with va
 10.0.3 can now take xls and xlsx files.
 """
 
+import babel
 import csv  # for dealing with .csv files
 import urllib
 import urllib2  # for getting stuff off the web
@@ -30,7 +31,7 @@ print("hello")
 
 
 csvpath = """
-/Users/mac/Dropbox (Scripps Research)/OLSON/RCSB v Uniprot comparisonB.xlsx
+C:\Users\\brett\Dropbox (Scripps Research)\Documents_dropbox\PBC Consortium\PBC_MODELS\insulin_secretory_granule\_ISG_menus_etc\_ISG_composite\ISG_Composite_BB307_teste.xlsx
 """
 csvpath = csvpath.strip('\n')
 print('csvpath = ' + csvpath)
@@ -242,7 +243,7 @@ default_headers = ['HEADERS', 'INCLUDE', 'CONFIDENCE', 'ACCESSION', 'UNIPROT_ID'
                    'UNIPROT_NAME', 'UNIPARC', 'NAME', 'SEQUENCE_ORIGINAL', 'MODIFIED SEQUENCE','FOUNDPDBS', 'chosenPDB',
                    'TOP_PDB', 'OPM', 'CLEANOPM', 'PRINCIPAL_VECTOR', 'OFFSET', 'JITTER_MAX', 'COLOR', 'MW',
                    'LENGTH', 'notes', 'LOCALIZATION', 'MEMBRANE', 'COFACTORS', 'LIGANDS', 'INTERACTIONS_RGD',
-                   'INTERACTIONS_UNIPROT', 'INTERACTIONS_STRINGDB', 'INTERACTIONS_BIOGRID', 'INTERACTIONS_INTACT']
+                   'UNIPROT_INTERACTIONS', 'STRINGDB_INTERACTIONS', 'BIOGRID_INTERACTIONS', 'INTACT_INTERACTIONS']
 startingHeaders = all_data[headersrow]
 for x in range(len(startingHeaders)):
     if startingHeaders[x] not in all_data[headersrow]:
@@ -599,6 +600,7 @@ def getBestUniprotFromGene(gene):
 
 #Checks to make sure that the uniprot entry is for the rattus norvegicus species. Returns boolean
 def checkOrganism(uniprot):
+    print('checkOrganism')
     return True
     print('checkOrganism ' + uniprot)
     urllib.urlretrieve("http://www.uniprot.org/uniprot/" + uniprot + ".xml", model_dir + 'uniprotentry.xml')
@@ -1906,7 +1908,7 @@ def main(gi=0, accession=0, ipi=0, uniparc=0, sequence=0, modifiedSequence=0, fo
             # These routines retrieve dependency and interaction info
             if 'UNIPROT_ID' in headers:
                 uniprot = all_data[x][headers['UNIPROT_ID']]
-            if possible(x, 'UNIPROT_ID','COFACTORS_UNIPROT'):
+            if possible(x, 'UNIPROT_ID','COFACTORS_UNIPROT'): # needs COFACTORS_UNIPROT - FIX!!!!
                 if uniprot != '' and uniprot != '?' and uniprot != 'complicated' and uniprot != 'None':
                     if checkOrganism(uniprot):  # this whole subroutine needs to be fixed. FIX
                         urllib.urlretrieve("http://www.uniprot.org/uniprot/" + uniprot + ".xml", model_dir + 'uniprotentry' + uniprot + '.xml')

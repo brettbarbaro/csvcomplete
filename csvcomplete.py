@@ -30,7 +30,7 @@ print("hello")
 
 
 csvpath = """
-/Users/mac/Dropbox (Scripps Research)/OLSON/RCSB v Uniprot comparisonB.xlsx
+C:\Users\\brett\Dropbox (Scripps Research)\Documents_dropbox\PBC Consortium\PBC_MODELS\insulin_secretory_granule\_ISG_menus_etc\_ISG_composite\ISG_Composite_BB307_testf.xlsx
 """
 csvpath = csvpath.strip('\n')
 print('csvpath = ' + csvpath)
@@ -224,6 +224,7 @@ newLocations = []
 for x in range(0,len(all_data)):
     value = all_data[x][0]
     if value == 'HEADERS':
+        headersrow = x
         print('headersrow = ' + str(x + 1))
         x = -1
 
